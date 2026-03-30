@@ -76,11 +76,11 @@ public class PagedCard {
         PImage img;
         for (int i=0; i<cards.length; i++) {
             if (cards[i]!=null) {
-                if (cards[i].item=="Item 1") {
+                if (cards[i].nom=="Item 1") {
                     img = img1;
-                } else if(cards[i].item=="Item 2"){
+                } else if(cards[i].nom=="Item 2"){
                     img = img2;
-                } else if(cards[i].item=="Item 3"){
+                } else if(cards[i].nom=="Item 3"){
                     img = img3;
                 } else {
                     img = img4;
@@ -160,8 +160,17 @@ public class PagedCard {
             p5.fill(0); p5.textSize(18);
             p5.text("Seleccionada: ", 900, 300);
             p5.textSize(24);
-            p5.text(cSelected.item, 900, 340);
+            p5.text(cSelected.nom, 900, 340);
             p5.popStyle();
+        }
+    }
+
+    public PagedCard(String[][] data){
+
+        cards = new Card[data.length];
+
+        for(int i = 0; i < data.length; i++){
+            cards[i] = new Card(data[i]);
         }
     }
 

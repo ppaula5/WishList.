@@ -1,15 +1,16 @@
 package WishList;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 
 import java.awt.*;
 
 public class Card {
     PImage img;
-    String item, name;
-    String price;
-    String description;
+    String nom;
+    String preu;
+    String marca;
 
     // Dimensions
     float x, y, w, h, b;
@@ -19,18 +20,16 @@ public class Card {
     public Card(){
     }
 
-    public Card(String item, String name, String price, String description){
-        this.item = item;
-        this.name = name;
-        this.price = price;
-        this.description = description;
+    public Card(String nom, String preu, String marca){
+        this.nom = nom;
+        this.preu = preu;
+        this.marca = marca;
     }
 
     public Card(String[] info){
-        this.item = info[0];
-        this.name = info[1];
-        this.price = info[2];
-        this.description = info[3];
+        this.nom = info[0];
+        this.preu = info[1];
+        this.marca = info[2];
     }
 
     //Setters
@@ -48,59 +47,65 @@ public class Card {
 
 
     public void display(PApplet p5, boolean selectedCard){
-        float textOffsetX = 40;
+
         p5.pushStyle();
 
-        p5.stroke(0);
+        // ====== COLORES ======
+        int bg = p5.color(245);
+        int hover = p5.color(230);
+        int selected = p5.color(200, 100, 100);
+
+        // ====== FONDO ======
+        p5.stroke(180);
         if(selectedCard){
-            p5.fill(200, 100, 100);
+            p5.fill(selected);
+        } else if(this.mouseOver(p5)){
+            p5.fill(hover);
+        } else {
+            p5.fill(bg);
         }
-        else if(this.mouseOver(p5)){
-            p5.fill(200);
-        }
-        else {
-            p5.fill(220);
-        }
-        p5.rect(x, y, w, h, b/2);
 
-        // imatge descriptiva
+        p5.rect(x, y, w, h, b);
 
-//        float imgW = img.width/3;
-        //   float imgH = img.height/3;
-        float imgX = x + 10;
-        float imgY = y + 10;
-        float imgW = 225;
-        float imgH = 265;
+        // ====== MÁRGENES ======
+        float margin = 15;
 
+        // ====== ZONA IMAGEN ======
+        float imgX = x + margin;
+        float imgY = y + margin;
+        float imgW = w * 0.35f;
+        float imgH = h - 2 * margin;
 
-        if(img!=null){
+        // fondo imagen
+        p5.fill(210);
+        p5.noStroke();
+        p5.rect(imgX, imgY, imgW, imgH, 10);
+
+        if(img != null){
+            p5.imageMode(PConstants.CORNER);
             p5.image(img, imgX, imgY, imgW, imgH);
-            img.resize(300, 0);
-            p5.noFill(); p5.rect(x+b , y+b , imgW, imgH);
         }
-        else {
-            p5.fill(50);
-        }
-        p5.rect(x + b, y + b, imgW, imgH);
 
-        // Títol
-        p5.fill(0); p5.textSize(24); p5.textAlign(p5.CENTER);
-        p5.text(name, x + 2*w/3 + textOffsetX, y + h/5);
+        // ====== ZONA TEXTO ======
+        float textX = imgX + imgW + margin;
+        float textW = w - imgW - 3 * margin;
 
-        // Lloc
-        p5.fill(0); p5.textSize(18); p5.textAlign(p5.CENTER);
+        p5.fill(0);
+        p5.textAlign(PConstants.LEFT);
 
-        // Secció
-        p5.fill(0); p5.textSize(18); p5.textAlign(p5.CENTER);
+        // ====== NOMBRE ======
+        p5.textSize(20);
+        p5.text(nom, textX, y + 40);
 
-        p5.text(item, x + 2*w/3 + textOffsetX, y + h/5+40);
+        // ====== MARCA ======
+        p5.textSize(16);
+        p5.fill(80);
+        p5.text(marca, textX, y + 70);
 
-        // Descripció
-        float textX = x + w/3 + b + textOffsetX;
-        float textW = 2*w/3 - b*2 - textOffsetX;
-        p5.text(price, textX, y + 2*h/3 - b-30, textW, h/4);
-
-        p5.text(description, textX, y + 2*h/3 - b, textW, h/4);
+        // ====== PRECIO ======
+        p5.textSize(18);
+        p5.fill(0);
+        p5.text("€ " + preu, textX, y + 110);
 
         p5.popStyle();
     }

@@ -66,6 +66,24 @@ public class Text_Field {
         }
     }
 
+    public void keyPressed(int keyCode) {
+        if (!selected) return;
+
+        if (keyCode == BACKSPACE) {
+            removeText();
+        }
+    }
+
+    // Gestiona entrada de text real (inclou accents)
+    public void keyTyped(char key) {
+        if (!selected) return;
+
+        // Evita caracteres de control
+        if (key == '\n' || key == '\r' || key == '\b') return;
+
+        addText(key);
+    }
+
     // Afegeix la lletra c al final del text
     public void addText(char c) {
         if (this.text.length() < 25) {

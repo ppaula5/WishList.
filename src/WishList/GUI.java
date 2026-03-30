@@ -5,10 +5,15 @@ import static WishList.Mides.*;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import java.util.ArrayList;
+
+
+import javax.xml.crypto.Data;
 
 public class GUI {
     static Colors colors;
 
+    public DataBase db;
     //Logo
     PImage logo;
     PImage logoP1;
@@ -29,6 +34,8 @@ public class GUI {
     public static boolean menuObert = false;
     //Botons
     public static Botons b1, b2, b3, b4, b5, b6;
+    public static Botons guardar;
+
 
     public static RoundButton rb1, rb2, rb3, rb4, rb5, rb6;
 
@@ -49,10 +56,14 @@ public class GUI {
     public static PANTALLA pantallaActual;
 
     //Text Field
-    public static Text_Field text1, text2;
+    public static Text_Field text1, text2, text3;
+    public static Text_Field nom, preu, marca, carpeta;
 
+    String errorLogin = "";
+    public String usuarioActual = "";
 
-    public GUI(PApplet p5){
+    public GUI(PApplet p5, DataBase db){
+        this.db = db;
         pantallaActual = PANTALLA.LOGIN;
 
         colors = new Colors(p5);
@@ -83,6 +94,7 @@ public class GUI {
         b4 = new Botons(p5, "Settings", 50, 440, 200, 50);
         b5 = new Botons(p5, "User", 50, 510, 200, 50);
         b6 = new Botons(p5, "Statistics", 50, 580, 200, 50);
+        guardar = new Botons(p5, "Guardar", (p5.width-300)/2, 460, 400, 50);
 
         rb1 = new RoundButton(p5, user, p5.width/2+550, p5.height/2-375, 60);
         rb2 = new RoundButton(p5, settings, p5.width/2+650, p5.height/2-375, 60);
@@ -96,9 +108,14 @@ public class GUI {
 
         text1 = new Puntets(p5, p5.width/2-200, p5.height/2+125, 400,50);
         text2 = new Text_Field(p5, p5.width/2-200, p5.height/2+70, 400,50);
+        text3 = new Text_Field(p5, p5.width/2-200, p5.height/2+70, 400, 50);
+        nom = new Text_Field(p5, (p5.width-300)/2, 220, 400, 50);
+        preu = new Text_Field(p5, (p5.width-300)/2, 280, 400, 50);
+        marca = new Text_Field(p5, (p5.width-300)/2, 340, 400, 50);
+        carpeta = new Text_Field(p5, (p5.width-300)/2, 400, 400, 50);
 
 
-        card1 =new Card("item x", "iphone 17", "1800€", "jjj");
+        card1 = new Card("iphone 17", "1800€", "Apple");
         card1.setDimensions(300, 350, p5.width/2+100, p5.height/2, 100);
         card1.setImage(mescladordj);
 
@@ -112,12 +129,14 @@ public class GUI {
         sd1.setTexts(t);
 
 
-        String[][] data ={
-                {"Item 1",  "Blouse", "39,99", "Description 1"},
-                {"Item 2", "Top", "19,99", "Description 2"},
-                {"Item 3", "Concealer", "35,00", "Description 3"},
-                {"Item 4", "AirPods", "134,95", "Description 4"},
-        };
+        String[][] data;
+        if (db != null && db.connectat) {
+            // Llamamos a tu consulta mágica de la carpeta Ropa
+            data = db.getProductesDeCarpeta("Ropa", "admin");
+        } else {
+            // Datos de reserva por si la base de datos falla
+            data = new String[][]{{"Error", "Sin conexión", "0", ""}};
+        }
 
         p5.imageMode(PConstants.CORNER);
         paged = new PagedCard(4);                 // 4 cards por página
@@ -139,6 +158,11 @@ public class GUI {
         b1.display(p5);
         text1.display(p5);
         text2.display(p5);
+
+        p5.fill(255, 0, 0);
+        p5.textAlign(p5.CENTER);
+        p5.text(errorLogin, p5.width/2, p5.height/2 + 100);
+
         // p5.textSize(20);
         //p5.text("contrasenya", p5.width/2-190, p5.height/2+157);
         // p5.textSize(20);
@@ -247,16 +271,29 @@ public class GUI {
         p5.rect(0, 0, p5.width, 200);
         logoP1(p5, logoP1);
         logo2P1(p5, logo2P1);
+
         rb1.display(p5);
         rb2.display(p5);
         rb3.display(p5);
+        rb6.display(p5);
 
+        if(menuObert){
+            sideBar(p5);
+            b2.display(p5);
+            b3.display(p5);
+            b4.display(p5);
+            b5.display(p5);
+            b6.display(p5);
+        }
 
+        //card1.display(p5, true);
+        //text3.display(p5);
+        nom.display(p5);
+        preu.display(p5);
+        marca.display(p5);
+        carpeta.display(p5);
 
-        card1.display(p5, true);
-        text2.display(p5);
-        text2.display(p5);
-        text2.display(p5);
+        guardar.display(p5);
     }
 
     //Zones de la GUI
@@ -300,5 +337,9 @@ public class GUI {
         p5.rect(0, 200, 300, p5.height);
         p5.fill(0);
         // p5.text("SIDEBAR", marginH + sidebarWidth/2, marginV + logoHeight + sidebarHeight/2);
+    }
+    public void cargarCardsDesdeBD(){
+        String[][] data = db.getProductesDeCarpeta("Ropa", "Paula");
+        paged = new PagedCard(data);
     }
 }
