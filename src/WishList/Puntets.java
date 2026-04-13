@@ -8,7 +8,6 @@ public class Puntets extends Text_Field{
         super(p5, x, y, w, h);
     }
 
-    // Dibuixa el Camp de Text
     public void display(PApplet p5) {
         p5.pushStyle();
         if (selected) {
@@ -28,6 +27,7 @@ public class Puntets extends Text_Field{
             password += "*";
         }
         p5.text(password, x + 5, y + h - textSize);
+        p5.fill(fgColor);
         p5.popStyle();
     }
 

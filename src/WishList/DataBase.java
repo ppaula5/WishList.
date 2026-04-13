@@ -1,5 +1,6 @@
 package WishList;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DataBase {
 
@@ -187,7 +188,7 @@ public class DataBase {
         return info;
     }
 
-public int getNumFilesQuery(String q){
+    public int getNumFilesQuery(String q){
         try{
             ResultSet rs = query.executeQuery(q);
             rs.next();
@@ -197,7 +198,7 @@ public int getNumFilesQuery(String q){
             System.out.println(e);
         }
         return 0;
-}
+    }
     public String[][] getProductesDeCarpeta(String nomCarpeta, String nomUsuari) {
         String qCount = "SELECT COUNT(*) AS total FROM Producte " +
                 "WHERE Carpeta_nom = '" + nomCarpeta + "' " +
@@ -237,6 +238,49 @@ public int getNumFilesQuery(String q){
             System.out.println("Error en getProductesDeCarpeta: " + e.getMessage());
             return new String[0][0];
         }
+    }
+    public String[][]getProductesUsuari(String nomUsuari){
+        String qCount = "SELECT COUNT(*) AS total FROM Producte " +
+                "WHERE Usuari_nom = '" + nomUsuari + "'";
+
+        int files = 0;
+
+        try {
+            ResultSet rsCount = query.executeQuery(qCount);
+            if (rsCount.next()) {
+                files = rsCount.getInt("total");
+            }
+        } catch (Exception e) {
+            System.out.println("Error comptant productes: " + e.getMessage());
+        }
+
+        if (files == 0) return new String[0][0];
+
+        String q = "SELECT nom, preu, marca, foto FROM Producte " +
+                "WHERE Usuari_nom = '" + nomUsuari + "' " +
+                "ORDER BY nom ASC";
+
+        String[][] info = new String[files][4];
+
+        try {
+            ResultSet rs = query.executeQuery(q);
+            int f = 0;
+
+            while (rs.next()) {
+                info[f][0] = rs.getString("nom");
+                info[f][1] = rs.getString("preu");
+                info[f][2] = rs.getString("marca");
+                info[f][3] = rs.getString("foto");
+                f++;
+            }
+
+            return info;
+
+        } catch (Exception e) {
+            System.out.println("Error en getTotsElsProductes: " + e.getMessage());
+        }
+
+        return new String[0][0];
     }
 
     void insertInfoTaulaUnitat(String num, String nom){
@@ -298,7 +342,7 @@ public int getNumFilesQuery(String q){
 
         return correcte;
     }
-    public void insertProducte(String nom, Float preu, String marca, String carpeta, String usuari){
+    public void insertProducte(String nom, Float preu, String marca, String carpeta, String usuari, String imgProducte){
 
         try {
 
@@ -308,7 +352,7 @@ public int getNumFilesQuery(String q){
             psCarpeta.setString(2, usuari);
             psCarpeta.executeUpdate();
 
-            String sql = "INSERT INTO Producte (nom, preu, marca, Carpeta_nom, Usuari_nom) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO Producte (nom, preu, marca, Carpeta_nom, Usuari_nom, foto) VALUES (?, ?, ?, ?, ?, ?)";
 
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setString(1, nom);
@@ -316,11 +360,57 @@ public int getNumFilesQuery(String q){
             ps.setString(3, marca);
             ps.setString(4, carpeta);
             ps.setString(5, usuari);
+            ps.setString(6, imgProducte);
 
             ps.executeUpdate();
 
             System.out.println("Producto insertado correctamente!");
 
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    public String[][] getGastoPorCarpeta(String usuario) {
+        String q = """
+        SELECT Carpeta_nom, SUM(preu) AS total
+        FROM Producte
+        WHERE Usuari_nom = ?
+        GROUP BY Carpeta_nom
+        ORDER BY total DESC
+    """;
+
+        try {
+            PreparedStatement ps = c.prepareStatement(q);
+            ps.setString(1, usuario);
+
+            ResultSet rs = ps.executeQuery();
+
+            ArrayList<String[]> result = new ArrayList<>();
+
+            while (rs.next()) {
+                String carpeta = rs.getString("Carpeta_nom");
+                String total = rs.getString("total");
+                result.add(new String[]{carpeta, total});
+            }
+
+            return result.toArray(new String[0][0]);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new String[0][0];
+    }
+    public void deleteProducte(String nom, String usuari){
+        String sql = "DELETE FROM Producte WHERE nom = ? AND Usuari_nom = ?";
+
+        try {
+            PreparedStatement ps = c.prepareStatement(sql);
+            ps.setString(1, nom);
+            ps.setString(2, usuari);
+            ps.executeUpdate();
+
+            System.out.println("Producto eliminado de la BD");
         } catch(Exception e){
             e.printStackTrace();
         }

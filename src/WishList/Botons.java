@@ -69,7 +69,6 @@ public class Botons {
         p5.popStyle();
     }
 
-    // Indica si el cursor està sobre el botó
     public boolean mouseOverButton(PApplet p5){
         return (p5.mouseX >= this.x) && (p5.mouseX <= this.x + this.w) &&
                 (p5.mouseY >= this.y) && (p5.mouseY <= this.y + this.h);

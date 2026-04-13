@@ -37,7 +37,7 @@ public class PagedCard {
         this.numTotalPages = (int) Math.ceil((float) numCards / numCardsPage);
     }
 
-    public void setCards() {
+    public void setCards(PApplet p5) {
 
         cards = new Card[this.cardsData.length];
 
@@ -49,7 +49,7 @@ public class PagedCard {
         float cardH = h / rows;
         float b = 10;
 
-        for (int np=0; np<=numTotalPages; np++) {
+        for (int np=0; np<numTotalPages; np++) {
             int firstCardPage = cardsPerPage * np;
             int lastCardPage  = firstCardPage + cardsPerPage - 1;
 
@@ -65,7 +65,7 @@ public class PagedCard {
                     float xCard = x + col * cardW;
                     float yCard = y + row * cardH;
 
-                    cards[i] = new Card(cardsData[i]);
+                    cards[i] = new Card(p5, cardsData[i]);
                     cards[i].setDimensions(xCard, yCard, cardW - b, cardH - b, b);
                 }
             }
@@ -76,11 +76,11 @@ public class PagedCard {
         PImage img;
         for (int i=0; i<cards.length; i++) {
             if (cards[i]!=null) {
-                if (cards[i].nom=="Item 1") {
+                if (cards[i].nom.equals("Item 1")) {
                     img = img1;
-                } else if(cards[i].nom=="Item 2"){
+                } else if(cards[i].nom.equals("Item 2")){
                     img = img2;
-                } else if(cards[i].nom=="Item 3"){
+                } else if(cards[i].nom.equals("Item 3")){
                     img = img3;
                 } else {
                     img = img4;
@@ -164,15 +164,42 @@ public class PagedCard {
             p5.popStyle();
         }
     }
+    public void deleteSelectedCard(PApplet p5, DataBase db, String usuario){
 
-    public PagedCard(String[][] data){
+        if(selectedCard == -1) return;
+
+        String nomProducto = cardsData[selectedCard][0];
+        db.deleteProducte(nomProducto, usuario);
+
+        String[][] newData = new String[cardsData.length - 1][];
+
+        int j = 0;
+        for(int i = 0; i < cardsData.length; i++){
+            if(i != selectedCard){
+                newData[j] = cardsData[i];
+                j++;
+            }
+        }
+
+        this.cardsData = newData;
+        this.numCards = newData.length;
+
+        this.numTotalPages = (int) Math.ceil((float) numCards / numCardsPage);
+
+        selectedCard = -1;
+
+        setCards(p5);
+    }
+
+    public PagedCard(PApplet p5, String[][] data){
 
         cards = new Card[data.length];
 
         for(int i = 0; i < data.length; i++){
-            cards[i] = new Card(data[i]);
+            cards[i] = new Card(p5, data[i]);
         }
     }
+
 
 }
 

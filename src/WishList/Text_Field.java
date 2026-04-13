@@ -15,6 +15,12 @@ public class Text_Field {
 
     boolean selected = false;
 
+    String placeholder = "";
+
+    public void setPlaceholder(String p){
+        this.placeholder = p;
+    }
+
     public Text_Field(PApplet p5, int x, int y, int w, int h) {
         this.x = x;
         this.y = y;
@@ -42,7 +48,16 @@ public class Text_Field {
 
         p5.fill(fgColor);
         p5.textSize(textSize); p5.textAlign(p5.LEFT, p5.CENTER);
-        p5.text(text, x + 5, y + h - textSize);
+
+
+        if(this.text.length() == 0){
+            p5.fill(150); // gris
+            p5.text(placeholder, x + 10, y + h/2 + 5);
+        } else {
+            p5.fill(0);
+            p5.text(this.text, x + 10, y + h/2 + 5);
+        }
+
         p5.popStyle();
     }
 

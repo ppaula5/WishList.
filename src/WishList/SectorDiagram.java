@@ -44,14 +44,31 @@ public class SectorDiagram {
     }
 
     public void setColors(int[] c){
-        this.colors = c;
+        if(c == null || c.length < values.length){
+            this.colors = new int[values.length];
+            for(int i = 0; i < values.length; i++){
+                float hue = (360.0f / values.length) * i;
+                this.colors[i] = java.awt.Color.HSBtoRGB(hue / 360f, 0.7f, 0.9f);
+            }
+        } else {
+            this.colors = c.clone();
+        }
     }
 
     // Dibuixa el Diagrama de Sectors
 
     public void display(PApplet p5){
+        if(values == null || colors == null || texts == null || values.length == 0){
+            return;
+        }
 
+        if(total == 0){
+            System.out.println("TOTAL = 0 → no se puede dibujar");
+            return;
+        }
         p5.pushStyle();
+        p5.fill(200);
+        p5.ellipse(this.x, this.y, this.r * 2, this.r * 2);
 
         float angStart = 0;
         for(int i=0; i<this.values.length; i++){

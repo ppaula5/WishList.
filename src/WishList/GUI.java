@@ -1,10 +1,16 @@
 package WishList;
 
 import static WishList.Mides.*;
+import static java.util.Collections.copy;
+import static processing.awt.ShimAWT.selectInput;
+import static processing.core.PConstants.ARROW;
+import static processing.core.PConstants.HAND;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+
+import java.io.File;
 import java.util.ArrayList;
 
 
@@ -12,6 +18,7 @@ import javax.xml.crypto.Data;
 
 public class GUI {
     static Colors colors;
+
 
     public DataBase db;
     //Logo
@@ -25,19 +32,29 @@ public class GUI {
     PImage creu;
 
     PImage fons;
+    File file;
+    PImage imgProducte;
+    String titolImatgeProducte;
+    String rutaImatge;
 
     PImage brusa, top, maquillatge, auriculars, mescladordj;
 
+    float[] porcentajes;
+    String[] carpetas;
+    float[] valores;
+
+    int selectedCardIndex = -1;
 
     boolean pitjat;
     public static boolean colorMode;
     public static boolean menuObert = false;
     //Botons
-    public static Botons b1, b2, b3, b4, b5, b6;
+    public static Botons b1, b2, b3, b4, b5, b6, bprevious, bnext;
     public static Botons guardar;
 
 
     public static RoundButton rb1, rb2, rb3, rb4, rb5, rb6;
+    public Botons bLoad;
 
     public static PagedCard paged;
 
@@ -61,6 +78,8 @@ public class GUI {
 
     String errorLogin = "";
     public String usuarioActual = "";
+
+
 
     public GUI(PApplet p5, DataBase db){
         this.db = db;
@@ -94,7 +113,12 @@ public class GUI {
         b4 = new Botons(p5, "Settings", 50, 440, 200, 50);
         b5 = new Botons(p5, "User", 50, 510, 200, 50);
         b6 = new Botons(p5, "Statistics", 50, 580, 200, 50);
-        guardar = new Botons(p5, "Guardar", (p5.width-300)/2, 460, 400, 50);
+
+        bprevious = new Botons (p5, "<", p5.width/2-10, p5.height-100, 100, 50);
+        bnext = new Botons (p5, ">", p5.width/2+100, p5.height-100, 100, 50);
+        bLoad = new Botons(p5, "LOAD", (p5.width-300)/2 + 420, 480, 120, 50);
+        guardar = new Botons(p5, "SAVE", (p5.width-300)/2, 540, 400, 50);
+
 
         rb1 = new RoundButton(p5, user, p5.width/2+550, p5.height/2-375, 60);
         rb2 = new RoundButton(p5, settings, p5.width/2+650, p5.height/2-375, 60);
@@ -109,10 +133,10 @@ public class GUI {
         text1 = new Puntets(p5, p5.width/2-200, p5.height/2+125, 400,50);
         text2 = new Text_Field(p5, p5.width/2-200, p5.height/2+70, 400,50);
         text3 = new Text_Field(p5, p5.width/2-200, p5.height/2+70, 400, 50);
-        nom = new Text_Field(p5, (p5.width-300)/2, 220, 400, 50);
-        preu = new Text_Field(p5, (p5.width-300)/2, 280, 400, 50);
-        marca = new Text_Field(p5, (p5.width-300)/2, 340, 400, 50);
-        carpeta = new Text_Field(p5, (p5.width-300)/2, 400, 400, 50);
+        nom = new Text_Field(p5, (p5.width-300)/2, 300, 400, 50);
+        preu = new Text_Field(p5, (p5.width-300)/2, 360, 400, 50);
+        marca = new Text_Field(p5, (p5.width-300)/2, 420, 400, 50);
+        carpeta = new Text_Field(p5, (p5.width-300)/2, 480, 400, 50);
 
 
         card1 = new Card("iphone 17", "1800€", "Apple");
@@ -121,29 +145,15 @@ public class GUI {
 
 
         sd1 = new SectorDiagram(p5.width/2, p5.height/2, 200);
-        float[] v = {50, 30, 20};
-        sd1.setValues(v);
-        int[] c = {100, 150, 200};
-        sd1.setColors(c);
-        String [] t = {"Technology", "Clothes", "HomeDecor"};
-        sd1.setTexts(t);
 
+        text1.setPlaceholder("Password");
+        text2.setPlaceholder("User");
 
-        String[][] data;
-        if (db != null && db.connectat) {
-            // Llamamos a tu consulta mágica de la carpeta Ropa
-            data = db.getProductesDeCarpeta("Ropa", "admin");
-        } else {
-            // Datos de reserva por si la base de datos falla
-            data = new String[][]{{"Error", "Sin conexión", "0", ""}};
-        }
+        nom.setPlaceholder("Name");
+        preu.setPlaceholder("Price");
+        marca.setPlaceholder("Brand");
+        carpeta.setPlaceholder("File");
 
-        p5.imageMode(PConstants.CORNER);
-        paged = new PagedCard(4);                 // 4 cards por página
-        paged.setDimensions(150, 300, 900, 600);
-        paged.setData(data);
-        paged.setCards();
-        paged.setImages(brusa, top, maquillatge, auriculars);
 
     }
     //Pantalles GUI
@@ -186,6 +196,8 @@ public class GUI {
         rb3.display(p5);
 
         paged.display(p5);
+        bnext.display(p5);
+        bprevious.display(p5);
         if(menuObert){
             sideBar(p5);
             b2.display(p5);
@@ -217,7 +229,7 @@ public class GUI {
         p5.fill(colors.getColorAt(2));
         p5.textSize(60);
         p5.textWidth((char) 30);
-        p5.text("Settings", 200, 270);
+        p5.text("Settings", 500, 270);
 
         s1.display(p5);
         s2.display(p5);
@@ -276,6 +288,7 @@ public class GUI {
         rb2.display(p5);
         rb3.display(p5);
         rb6.display(p5);
+        bLoad.display(p5);
 
         if(menuObert){
             sideBar(p5);
@@ -286,12 +299,48 @@ public class GUI {
             b6.display(p5);
         }
 
+        if(imgProducte!=null){
+            float imgX = (p5.width - 300)/2 - 300;
+            float imgY = 300;
+
+            float maxSize = 300;
+
+            float ratio = (float) imgProducte.width / imgProducte.height;
+
+            float newW, newH;
+
+            if(ratio > 1){
+                newW = maxSize;
+                newH = maxSize / ratio;
+            } else {
+                newH = maxSize;
+                newW = maxSize * ratio;
+            }
+
+            p5.fill(220);
+            p5.rect(imgX - 10, imgY - 10, newW + 20, newH + 20, 10);
+
+            p5.image(imgProducte, imgX, imgY, newW, newH);
+        }
+
         //card1.display(p5, true);
         //text3.display(p5);
         nom.display(p5);
         preu.display(p5);
         marca.display(p5);
         carpeta.display(p5);
+
+        p5.textAlign(p5.CORNER);
+
+        p5.text("Name", ((p5.width-300)/2)+10, 330);
+        p5.text("Price", ((p5.width-300)/2)+10, 390);
+        p5.text("Brand", ((p5.width-300)/2)+10, 450);
+        p5.text("File", ((p5.width-300)/2)+10, 510);
+
+        p5.fill(255);
+        p5.textAlign(p5.CENTER);
+        p5.textSize(60);
+        p5.text("Add item", p5.width/2, 280);
 
         guardar.display(p5);
     }
@@ -338,8 +387,50 @@ public class GUI {
         p5.fill(0);
         // p5.text("SIDEBAR", marginH + sidebarWidth/2, marginV + logoHeight + sidebarHeight/2);
     }
-    public void cargarCardsDesdeBD(){
-        String[][] data = db.getProductesDeCarpeta("Ropa", "Paula");
-        paged = new PagedCard(data);
+    public void cargarCardsDesdeBD(PApplet p5){
+        String[][] data = db.getProductesUsuari(usuarioActual);
+        paged = new PagedCard(8);
+
+        paged.setDimensions(350, 250, 900, 600);
+        paged.setData(data);
+        paged.setCards(p5);
     }
-}
+
+    public void eliminarCard(){
+        ArrayList<Card> nuevas = new ArrayList<>();
+
+        for(Card c : paged.cards){
+            if(c != null){
+                nuevas.add(c);
+            }
+        }
+
+        paged.cards = nuevas.toArray(new Card[0]);
+
+        selectedCardIndex = -1;
+    }
+    public void cargarEstadisticas(String usuario) {
+        String[][] data = db.getGastoPorCarpeta(usuario);
+
+
+        if (data == null || data.length == 0) {
+            System.out.println("No hay datos para mostrar");
+            return;
+        }
+
+        int n = data.length;
+        carpetas = new String[n];
+        valores = new float[n];
+
+        for (int i = 0; i < n; i++) {
+            carpetas[i] = data[i][0];
+            valores[i] = Float.parseFloat(data[i][1]);
+        }
+
+        // Inicializamos el diagrama una sola vez con los valores reales
+        sd1 = new SectorDiagram(800, 500, 200); // Ajusta la X e Y a tu gusto
+        sd1.setTexts(carpetas);
+        sd1.setValues(valores);
+        sd1.setColors(null); // Generará colores aleatorios automáticamente
+    }
+    }
